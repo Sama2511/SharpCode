@@ -9,13 +9,14 @@ import {
   SelectValue,
 } from './ui/select'
 
-const languagesVersions = {
+export const languagesVersions = {
   javascript: '18.15.0',
   typescript: '5.0.3',
   python: '3.10.0',
   java: '15.0.2',
   csharp: '6.12.0',
 }
+
 const languages = Object.entries(languagesVersions)
 
 export default function LanguageSelector({
@@ -23,7 +24,7 @@ export default function LanguageSelector({
   onSelect,
 }: {
   lang: string
-  onSelect: (lang: string) => void
+  onSelect: (lang: keyof typeof languagesVersions) => void
 }) {
   return (
     <Select value={lang} onValueChange={onSelect}>
