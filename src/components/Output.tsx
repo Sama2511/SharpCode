@@ -1,5 +1,5 @@
 import { Button } from './ui/button'
-import { executeCode } from '@/api'
+import { executeCode } from '@/routes/api/execute'
 import { languagesVersions } from './LanguageSelector'
 import { useMutation } from '@tanstack/react-query'
 import { Spinner } from './ui/spinner'

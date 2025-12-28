@@ -28,6 +28,22 @@ export default function CodeEditor() {
         onMount={onMount}
         value={Value}
         onChange={(Value: any) => setValue(Value)}
+        options={{
+          fontSize: 14,
+          fontFamily: "'Fira Code', 'Consolas', monospace",
+          minimap: { enabled: true },
+          scrollBeyondLastLine: false,
+          lineNumbers: 'on',
+          roundedSelection: true,
+          automaticLayout: true,
+          padding: { top: 10 },
+          cursorBlinking: 'smooth',
+          cursorSmoothCaretAnimation: 'on',
+          smoothScrolling: true,
+          bracketPairColorization: { enabled: true },
+          renderLineHighlight: 'all',
+          tabSize: 2,
+        }}
       />
       <Output editRef={editRef} language={language} />
     </div>
