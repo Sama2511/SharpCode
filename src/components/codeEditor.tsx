@@ -29,19 +29,19 @@ export default function CodeEditor() {
         value={Value}
         onChange={(Value: any) => setValue(Value)}
         options={{
-          fontSize: 14,
+          fontSize: 20,
           fontFamily: "'Fira Code', 'Consolas', monospace",
           minimap: { enabled: true },
-          scrollBeyondLastLine: false,
+          // scrollBeyondLastLine: false,
           lineNumbers: 'on',
-          roundedSelection: true,
-          automaticLayout: true,
+          // roundedSelection: true,
+          // automaticLayout: true,
           padding: { top: 10 },
           cursorBlinking: 'smooth',
           cursorSmoothCaretAnimation: 'on',
           smoothScrolling: true,
-          bracketPairColorization: { enabled: true },
-          renderLineHighlight: 'all',
+          // bracketPairColorization: { enabled: true },
+          // renderLineHighlight: 'all',
           tabSize: 2,
         }}
       />
