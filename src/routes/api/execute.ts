@@ -1,38 +1,36 @@
 import axios from 'axios'
 import { languagesVersions } from '../../components/LanguageSelector'
 
+const wandboxCompilers: Record<keyof typeof languagesVersions, string> = {
+  javascript: 'nodejs-20.17.0',
+  typescript: 'typescript-5.6.2',
+  python: 'cpython-3.10.15',
+  java: 'openjdk-jdk-22+36',
+  csharp: 'dotnetcore-8.0.402',
+}
+
 const API = axios.create({
-  baseURL: 'https://emkc.org/api/v2/piston',
+  baseURL: 'https://wandbox.org/api',
 })
 
 export const executeCode = async (
   language: keyof typeof languagesVersions,
   sourcecode: string,
 ) => {
-  const response = await API.post('/execute', {
-    language: language,
-    version: languagesVersions[language],
-    files: [
-      {
-        content: sourcecode,
-      },
-    ],
+  const compiler = wandboxCompilers[language]
+  const response = await API.post('/compile.json', {
+    compiler,
+    code: sourcecode,
   })
-  return response.data
-}
 
-export const getLanguages = async () => {
-  const response = await fetch('https://emkc.org/api/v2/piston/runtimes')
-  const data = await response.json()
+  const data = response.data
+  const output = data.program_output || ''
+  const stderr = data.program_error || data.compiler_error || ''
 
-  const wantedLanguages = Object.keys(languagesVersions)
-  const filtered = data.filter(
-    (runtime: any) =>
-      wantedLanguages.includes(runtime.language) &&
-      languagesVersions[runtime.language as keyof typeof languagesVersions] ===
-        runtime.version,
-  )
-
-  console.log('Filtered languages:', filtered)
-  return filtered
+  return {
+    run: {
+      output: output || stderr,
+      stderr,
+    },
+  }
 }

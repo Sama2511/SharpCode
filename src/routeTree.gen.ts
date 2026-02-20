@@ -25,7 +25,7 @@ const CodeIndexRoute = CodeIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/code': typeof CodeIndexRoute
+  '/code/': typeof CodeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -38,7 +38,7 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/code'
+  fullPaths: '/' | '/code/'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/code'
   id: '__root__' | '/' | '/code/'
@@ -61,7 +61,7 @@ declare module '@tanstack/react-router' {
     '/code/': {
       id: '/code/'
       path: '/code'
-      fullPath: '/code'
+      fullPath: '/code/'
       preLoaderRoute: typeof CodeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
