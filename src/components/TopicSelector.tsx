@@ -68,7 +68,7 @@ export default function TopicSelector({
 }) {
   return (
     <Select value={topic} onValueChange={onSelect}>
-      <SelectTrigger className="w-fit h-full mt-10">
+      <SelectTrigger className="w-fit h-full ">
         <SelectValue placeholder="Select a concept" />
       </SelectTrigger>
       <SelectContent position="popper">

@@ -26,7 +26,7 @@ export default function LanguageSelector({
 }) {
   return (
     <Select value={lang} onValueChange={onSelect}>
-      <SelectTrigger className="w-fit h-full mt-10">
+      <SelectTrigger className="w-fit h-full ">
         <SelectValue placeholder="Select a language" />
       </SelectTrigger>
       <SelectContent position="popper">
