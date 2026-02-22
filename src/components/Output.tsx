@@ -15,7 +15,7 @@ export default function Output({
 }) {
   const [Output, setOutput] = useState('')
   const [isError, SetError] = useState(false)
-  const { data, isPending, mutate } = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationFn: async (sourceCode: string) => {
       try {
         const { run: result } = await executeCode(language, sourceCode)

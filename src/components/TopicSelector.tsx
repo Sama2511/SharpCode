@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Select,
   SelectContent,
@@ -61,14 +60,16 @@ export default function TopicSelector({
   language,
   topic,
   onSelect,
+  invalid,
 }: {
   language: keyof typeof languagesVersions
   topic: string
   onSelect: (topic: string) => void
+  invalid: boolean
 }) {
   return (
     <Select value={topic} onValueChange={onSelect}>
-      <SelectTrigger className="w-fit h-full ">
+      <SelectTrigger className="w-fit h-full" aria-invalid={invalid}>
         <SelectValue placeholder="Select a concept" />
       </SelectTrigger>
       <SelectContent position="popper">

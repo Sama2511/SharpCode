@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Select,
   SelectContent,
@@ -32,7 +31,7 @@ export default function LanguageSelector({
       <SelectContent position="popper">
         <SelectGroup>
           <SelectLabel>Language</SelectLabel>
-          {languages.map(([language, version]) => (
+          {languages.map(([language]) => (
             <SelectItem
               className="cursor-pointer"
               key={language}
@@ -40,7 +39,6 @@ export default function LanguageSelector({
             >
               {language}
               &nbsp;
-              {/* <p>{version}</p> */}
             </SelectItem>
           ))}
         </SelectGroup>
