@@ -2,13 +2,14 @@ import { Editor } from '@monaco-editor/react'
 import { useRef, useState } from 'react'
 import LanguageSelector, { languagesVersions } from './LanguageSelector'
 import Output from './Output'
+import TopicSelector from './TopicSelector'
 
 export default function CodeEditor() {
   const editRef = useRef(null)
   const [language, setLanguage] =
     useState<keyof typeof languagesVersions>('javascript')
   const [Value, setValue] = useState('')
-
+  const [concept, setConcept] = useState('')
   const onMount = (editor: any) => {
     editRef.current = editor
     editor.focus()
@@ -16,11 +17,22 @@ export default function CodeEditor() {
 
   const onSelect = (language: keyof typeof languagesVersions) => {
     setLanguage(language)
+    setConcept('')
+  }
+  const onSelectTopic = (topic: string) => {
+    setConcept(topic)
   }
 
   return (
     <div>
-      <LanguageSelector lang={language} onSelect={onSelect} />
+      <div className="flex gap-2">
+        <LanguageSelector lang={language} onSelect={onSelect} />
+        <TopicSelector
+          language={language}
+          topic={concept}
+          onSelect={onSelectTopic}
+        />
+      </div>
       <Editor
         height="40vh"
         theme="vs-dark"

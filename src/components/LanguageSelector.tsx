@@ -16,22 +16,20 @@ export const languagesVersions = {
   java: '15.0.2',
   csharp: '6.12.0',
 }
-
 const languages = Object.entries(languagesVersions)
-
 export default function LanguageSelector({
   lang,
   onSelect,
 }: {
-  lang: string
+  lang: keyof typeof languagesVersions
   onSelect: (lang: keyof typeof languagesVersions) => void
 }) {
   return (
     <Select value={lang} onValueChange={onSelect}>
-      <SelectTrigger className="w-[180px] h-full mt-10">
+      <SelectTrigger className="w-fit h-full mt-10">
         <SelectValue placeholder="Select a language" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper">
         <SelectGroup>
           <SelectLabel>Language</SelectLabel>
           {languages.map(([language, version]) => (
@@ -42,7 +40,7 @@ export default function LanguageSelector({
             >
               {language}
               &nbsp;
-              <p>{version}</p>
+              {/* <p>{version}</p> */}
             </SelectItem>
           ))}
         </SelectGroup>
