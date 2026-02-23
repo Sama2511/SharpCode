@@ -1,4 +1,3 @@
-import { Button } from './ui/button'
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group'
 
 export default function Difficulty({
@@ -12,7 +11,7 @@ export default function Difficulty({
     <ToggleGroup
       type="single"
       value={difficulty}
-      className="border-black border h-fit"
+      className=" h-fit"
       variant="outline"
       onValueChange={onSelect}
     >

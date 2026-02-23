@@ -9,9 +9,11 @@ import { useState } from 'react'
 export default function Output({
   editRef,
   language,
+  onOutput,
 }: {
   editRef: any
   language: keyof typeof languagesVersions
+  onOutput: (output: string) => void
 }) {
   const [Output, setOutput] = useState('')
   const [isError, SetError] = useState(false)
@@ -20,6 +22,7 @@ export default function Output({
       try {
         const { run: result } = await executeCode(language, sourceCode)
         setOutput(result.output)
+        onOutput(result.output)
         result.stderr && SetError(true)
       } catch (error) {
         toast.error('An error has occurred', {

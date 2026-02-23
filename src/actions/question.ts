@@ -7,7 +7,6 @@ export const getQuestion = createServerFn()
   )
   .handler(async ({ data }) => {
     const { language, topic, difficulty } = data
-    console.log(data)
     const client = new OpenAI()
     const response = await client.responses.create({
       model: 'gpt-5.2',
