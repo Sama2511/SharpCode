@@ -19,6 +19,7 @@ import { Button } from './ui/button'
 import { Spinner } from './ui/spinner'
 import { getQuestion } from '@/actions/question'
 import { checkAnswer } from '@/actions/checkAnswer'
+import { getHint } from '@/actions/hint'
 
 export default function CodeEditor() {
   const editRef = useRef(null)
@@ -35,6 +36,8 @@ export default function CodeEditor() {
   const [openDialog, setOpenDialog] = useState(false)
   const [evaluation, setEvaluation] = useState('')
   const [isCorrect, setIsCorrect] = useState(false)
+  const [hint, setHint] = useState('')
+  const [hintLoading, setHintLoading] = useState(false)
   const { width, height } = useWindowSize()
 
   const onMount = (editor: any) => {
@@ -87,6 +90,17 @@ export default function CodeEditor() {
       console.log(error)
     }
     setVerifying(false)
+  }
+  async function requestHint() {
+    setHintLoading(true)
+    try {
+      const result = await getHint({ data: { question, code } })
+      setHint(result)
+    } catch (error) {
+      setHint('Failed to get hint')
+      console.log(error)
+    }
+    setHintLoading(false)
   }
   return (
     <div>
@@ -145,6 +159,22 @@ export default function CodeEditor() {
                 className="cursor-pointer"
               >
                 Check
+              </Button>
+              <Button
+                onClick={requestHint}
+                disabled={
+                  question == 'nothing yet' || code == '' || hintLoading
+                }
+                variant="outline"
+                className="cursor-pointer"
+              >
+                {hintLoading ? (
+                  <>
+                    <Spinner /> Getting hint
+                  </>
+                ) : (
+                  'Hint'
+                )}
               </Button>
               <Dialog
                 open={openDialog}
@@ -214,7 +244,49 @@ export default function CodeEditor() {
             <Spinner />
           </div>
         ) : (
-          <pre className="whitespace-pre-wrap wrap-break-word">{question}</pre>
+          <>
+            <pre className="whitespace-pre-wrap wrap-break-word">
+              {question}
+            </pre>
+            <Dialog
+              open={hint !== ''}
+              onOpenChange={(open) => {
+                if (!open) setHint('')
+              }}
+            >
+              <DialogContent
+                showCloseButton={false}
+                className="p-0 overflow-hidden gap-0"
+              >
+                <div className="px-6 py-5 bg-blue-950/40 border-b border-blue-800/50">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
+                      <span className="inline-flex items-center justify-center size-8 rounded-full text-sm bg-blue-500/20 text-blue-400">
+                        ?
+                      </span>
+                      Hint
+                    </DialogTitle>
+                  </DialogHeader>
+                </div>
+                <div className="px-6 py-5">
+                  <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                    {hint}
+                  </DialogDescription>
+                </div>
+                <div className="px-6 pb-5 flex justify-end">
+                  <DialogClose asChild>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="cursor-pointer"
+                    >
+                      Got it
+                    </Button>
+                  </DialogClose>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
         )}
       </div>
     </div>
