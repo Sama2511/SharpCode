@@ -1,72 +1,42 @@
-import { Button } from './ui/button'
-import { executeCode } from '@/routes/api/execute'
-import { languagesVersions } from './LanguageSelector'
-import { useMutation } from '@tanstack/react-query'
-import { Spinner } from './ui/spinner'
-import { toast } from 'sonner'
-import { useState } from 'react'
-
 export default function Output({
-  editRef,
-  language,
-  onOutput,
+  output,
+  isError,
 }: {
-  editRef: any
-  language: keyof typeof languagesVersions
-  onOutput: (output: string) => void
+  output: string
+  isError: boolean
 }) {
-  const [Output, setOutput] = useState('')
-  const [isError, SetError] = useState(false)
-  const { isPending, mutate } = useMutation({
-    mutationFn: async (sourceCode: string) => {
-      try {
-        const { run: result } = await executeCode(language, sourceCode)
-        setOutput(result.output)
-        onOutput(result.output)
-        result.stderr && SetError(true)
-      } catch (error) {
-        toast.error('An error has occurred', {
-          style: {
-            background: '#ff6467',
-          },
-        })
-      }
-    },
-  })
-
-  function runCode() {
-    SetError(false)
-    setOutput('')
-    const sourceCode = editRef.current?.getValue()
-    if (!sourceCode) return
-    mutate(sourceCode)
-  }
-
   return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Output</h3>
-        <Button onClick={runCode} disabled={isPending}>
-          {isPending ? (
-            <>
-              <Spinner /> Executing
-            </>
-          ) : (
-            'Run Code'
-          )}
-        </Button>
-      </div>
-      <div
-        className={`min-h-50 max-h-100 overflow-auto rounded-md border p-4 font-mono text-sm ${
-          isError ? 'bg-red-950/20 border-destructive' : 'bg-secondary'
-        }`}
-      >
-        {Output ? (
-          <pre className="whitespace-pre-wrap wrap-break-word">{Output}</pre>
+    <div className="h-full flex flex-col bg-background font-mono text-sm border-t-2">
+      {/* Terminal title bar */}
+      {/* <div className="flex items-center gap-1.5 px-4 py-1.5 bg-popover border-b border-border shrink-0">
+        <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+        <span className="size-2.5 rounded-full bg-[#febc2e]" />
+        <span className="size-2.5 rounded-full bg-[#28c840]" />
+      </div> */}
+
+      {/* Terminal body */}
+      <div className="flex-1 overflow-auto p-4 bg-[#1e1e1e]">
+        <div className="underline underline-offset-4 mb-4">Output</div>
+        {output ? (
+          <div className="flex gap-2">
+            <span className={isError ? 'text-red-400' : 'text-emerald-400'}>
+              {isError ? '✗' : '❯'}
+            </span>
+            <pre
+              className={`whitespace-pre-wrap wrap-break-word leading-relaxed ${
+                isError ? 'text-red-400' : 'text-foreground'
+              }`}
+            >
+              {output}
+            </pre>
+          </div>
         ) : (
-          <span className="text-muted-foreground">
-            Click "Run Code" to see output
-          </span>
+          <div className="flex gap-2 items-center">
+            <span className="text-white">❯</span>
+            <span className="text-white italic">
+              Run your code to see output...
+            </span>
+          </div>
         )}
       </div>
     </div>

@@ -14,12 +14,12 @@ import {
 } from '@/components/ui/dialog'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
-
 import { Button } from './ui/button'
 import { Spinner } from './ui/spinner'
 import { getQuestion } from '@/actions/question'
 import { checkAnswer } from '@/actions/checkAnswer'
 import { getHint } from '@/actions/hint'
+import { useRunCode } from '@/hooks/useRunCode'
 
 export default function CodeEditor() {
   const editRef = useRef(null)
@@ -28,10 +28,11 @@ export default function CodeEditor() {
   const [code, setCode] = useState('')
   const [topic, setTopic] = useState('')
   const [difficulty, setDifficulty] = useState('Easy')
-  const [question, setQuestion] = useState('nothing yet')
+  const [question, setQuestion] = useState('Press "Get Question" Button')
   const [isLoading, setIsLoading] = useState(false)
   const [invalid, setInvalid] = useState(false)
-  const [output, setOutput] = useState('')
+  const { output, isError, isPending, runCode } = useRunCode(editRef, language)
+
   const [verifying, setVerifying] = useState(false)
   const [openDialog, setOpenDialog] = useState(false)
   const [evaluation, setEvaluation] = useState('')
@@ -74,6 +75,7 @@ export default function CodeEditor() {
     }
     setIsLoading(false)
   }
+
   async function verifyAnswer() {
     setVerifying(true)
     try {
@@ -91,6 +93,7 @@ export default function CodeEditor() {
     }
     setVerifying(false)
   }
+
   async function requestHint() {
     setHintLoading(true)
     try {
@@ -102,193 +105,220 @@ export default function CodeEditor() {
     }
     setHintLoading(false)
   }
+
   return (
-    <div>
-      <div className="flex items-center h-20 gap-2.5 pl-5">
-        <div className="flex gap-2  ">
-          <LanguageSelector lang={language} onSelect={onSelectLanguage} />
-          <TopicSelector
-            language={language}
-            topic={topic}
-            onSelect={onSelectTopic}
-            invalid={invalid}
-          />
-        </div>
+    <div className="flex flex-col h-screen bg-background text-foreground">
+      {/* Toolbar */}
+      <div className="flex items-center h-14 gap-2 px-4 border-b border-border bg-card shrink-0">
+        <LanguageSelector lang={language} onSelect={onSelectLanguage} />
+        <TopicSelector
+          language={language}
+          topic={topic}
+          onSelect={onSelectTopic}
+          invalid={invalid}
+        />
         <Difficulty difficulty={difficulty} onSelect={onSelectDifficulty} />
-      </div>
-      <Editor
-        height="40vh"
-        theme="vs-dark"
-        language={language}
-        onMount={onMount}
-        value={code}
-        onChange={(value: any) => setCode(value)}
-        options={{
-          fontSize: 20,
-          fontFamily: "'Fira Code', 'Consolas', monospace",
-          minimap: { enabled: true },
-          lineNumbers: 'on',
-          padding: { top: 10 },
-          cursorBlinking: 'smooth',
-          cursorSmoothCaretAnimation: 'on',
-          smoothScrolling: true,
-          tabSize: 2,
-        }}
-      />
-      <Output editRef={editRef} language={language} onOutput={setOutput} />
-      <div className="w-100 p-4">
-        <div className="flex gap-2">
+        <div className="ml-auto">
           <Button
             onClick={requestQuestion}
             disabled={isLoading || verifying}
+            size="sm"
             className="cursor-pointer"
           >
-            get question
+            {isLoading ? (
+              <>
+                <Spinner /> Generating
+              </>
+            ) : (
+              'Get Question'
+            )}
           </Button>
-          {verifying ? (
-            <Button variant="outline" disabled>
-              Checking
-              <Spinner />
-            </Button>
-          ) : (
-            <>
-              <Button
-                onClick={verifyAnswer}
-                disabled={question == 'nothing yet' || code == ''}
-                variant="outline"
-                className="cursor-pointer"
-              >
-                Check
-              </Button>
-              <Button
-                onClick={requestHint}
-                disabled={
-                  question == 'nothing yet' || code == '' || hintLoading
-                }
-                variant="outline"
-                className="cursor-pointer"
-              >
-                {hintLoading ? (
-                  <>
-                    <Spinner /> Getting hint
-                  </>
-                ) : (
-                  'Hint'
-                )}
-              </Button>
-              <Dialog
-                open={openDialog}
-                onOpenChange={(open) => {
-                  setOpenDialog(open)
-                  if (!open) setTimeout(() => setIsCorrect(false), 100)
-                }}
-              >
-                <DialogContent
-                  showCloseButton={false}
-                  className="p-0 overflow-hidden gap-0"
-                >
-                  <div
-                    className={`px-6 py-5 ${
-                      isCorrect
-                        ? 'bg-emerald-950/40 border-b border-emerald-800/50'
-                        : 'bg-red-950/40 border-b border-red-800/50'
-                    }`}
-                  >
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
-                        <span
-                          className={`inline-flex items-center justify-center size-8 rounded-full text-sm ${
-                            isCorrect
-                              ? 'bg-emerald-900/20 text-emerald-300'
-                              : 'bg-red-500/20 text-red-400'
-                          }`}
-                        >
-                          {isCorrect ? '✓' : '✗'}
-                        </span>
-                        {isCorrect ? 'Nailed it!' : 'Not quite right'}
-                      </DialogTitle>
-                    </DialogHeader>
-                  </div>
-                  <div className="px-6 py-5">
-                    <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
-                      {evaluation}
-                    </DialogDescription>
-                  </div>
-                  <div className="px-6 pb-5 flex justify-end">
-                    <DialogClose asChild>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="cursor-pointer"
-                      >
-                        {isCorrect ? 'Next challenge' : 'Try again'}
-                      </Button>
-                    </DialogClose>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </>
-          )}
-          {isCorrect && (
-            <Confetti
-              width={width}
-              height={height}
-              confettiSource={{ x: width / 2, y: height / 2, w: 0, h: 0 }}
-              initialVelocityY={{ min: -15, max: -5 }}
-            />
-          )}
         </div>
-        {isLoading ? (
-          <div className="flex items-center gap-2">
-            <p>Preparing the question</p>
-            <Spinner />
+      </div>
+
+      {/* Main content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left: Editor + Output */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <Editor
+            height="60%"
+            theme="vs-dark"
+            language={language}
+            onMount={onMount}
+            value={code}
+            onChange={(value: any) => setCode(value)}
+            options={{
+              fontSize: 16,
+              fontFamily: "'Fira Code', 'Consolas', monospace",
+              minimap: { enabled: false },
+              lineNumbers: 'on',
+              padding: { top: 10 },
+              cursorBlinking: 'smooth',
+              cursorSmoothCaretAnimation: 'on',
+              smoothScrolling: true,
+              tabSize: 2,
+            }}
+          />
+          <div className="flex-1 overflow-y-auto border-t border-border">
+            <Output output={output} isError={isError} />
           </div>
-        ) : (
-          <>
-            <pre className="whitespace-pre-wrap wrap-break-word">
+        </div>
+
+        {/* Right: Question panel */}
+        <div className="w-80 shrink-0 flex flex-col border-l border-border bg-popover">
+          <div className="p-4 flex-1 overflow-y-auto">
+            <p className="text-xs font-semibold uppercase tracking-wider text- mb-3">
+              Challenge
+            </p>
+            <pre className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground">
               {question}
             </pre>
-            <Dialog
-              open={hint !== ''}
-              onOpenChange={(open) => {
-                if (!open) setHint('')
-              }}
+          </div>
+          {/* Action buttons */}
+          <div className="p-4 border-t border-border flex flex-col gap-2">
+            <Button
+              onClick={runCode}
+              disabled={isPending || code === ''}
+              size="sm"
+              className="cursor-pointer w-full"
             >
-              <DialogContent
-                showCloseButton={false}
-                className="p-0 overflow-hidden gap-0"
+              {isPending ? (
+                <>
+                  <Spinner /> Executing
+                </>
+              ) : (
+                'Run Code'
+              )}
+            </Button>
+            <Button
+              onClick={requestHint}
+              disabled={
+                question === 'Press "Get Question" Button' || hintLoading
+              }
+              variant="outline"
+              size="sm"
+              className="cursor-pointer w-full"
+            >
+              {hintLoading ? (
+                <>
+                  <Spinner /> Getting hint
+                </>
+              ) : (
+                'Get Hint'
+              )}
+            </Button>
+            {verifying ? (
+              <Button variant="default" size="sm" disabled className="w-full">
+                <Spinner /> Checking
+              </Button>
+            ) : (
+              <Button
+                onClick={verifyAnswer}
+                disabled={
+                  question === 'Press "Get Question" Button' || code === ''
+                }
+                size="sm"
+                className="cursor-pointer w-full"
               >
-                <div className="px-6 py-5 bg-blue-950/40 border-b border-blue-800/50">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
-                      <span className="inline-flex items-center justify-center size-8 rounded-full text-sm bg-blue-500/20 text-blue-400">
-                        ?
-                      </span>
-                      Hint
-                    </DialogTitle>
-                  </DialogHeader>
-                </div>
-                <div className="px-6 py-5">
-                  <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
-                    {hint}
-                  </DialogDescription>
-                </div>
-                <div className="px-6 pb-5 flex justify-end">
-                  <DialogClose asChild>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="cursor-pointer"
-                    >
-                      Got it
-                    </Button>
-                  </DialogClose>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </>
-        )}
+                Check Answer
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
+
+      <Dialog
+        open={openDialog}
+        onOpenChange={(open) => {
+          setOpenDialog(open)
+          if (!open) setTimeout(() => setIsCorrect(false), 100)
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="p-0 overflow-hidden gap-0"
+        >
+          <div
+            className={`px-6 py-5 ${
+              isCorrect
+                ? 'bg-emerald-950/40 border-b border-emerald-800/50'
+                : 'bg-red-950/40 border-b border-red-800/50'
+            }`}
+          >
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
+                <span
+                  className={`inline-flex items-center justify-center size-8 rounded-full text-sm ${
+                    isCorrect
+                      ? 'bg-emerald-900/20 text-emerald-300'
+                      : 'bg-red-500/20 text-red-400'
+                  }`}
+                >
+                  {isCorrect ? '✓' : '✗'}
+                </span>
+                {isCorrect ? 'Nailed it!' : 'Not quite right'}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="px-6 py-5">
+            <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+              {evaluation}
+            </DialogDescription>
+          </div>
+          <div className="px-6 pb-5 flex justify-end">
+            <DialogClose asChild>
+              <Button size="sm" variant="secondary" className="cursor-pointer">
+                {isCorrect ? 'Next challenge' : 'Try again'}
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Hint dialog */}
+      <Dialog
+        open={hint !== ''}
+        onOpenChange={(open) => {
+          if (!open) setHint('')
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="p-0 overflow-hidden gap-0"
+        >
+          <div className="px-6 py-5 bg-blue-950/40 border-b border-blue-800/50">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
+                <span className="inline-flex items-center justify-center size-8 rounded-full text-sm bg-blue-500/20 text-blue-400">
+                  ?
+                </span>
+                Hint
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="px-6 py-5">
+            <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+              {hint}
+            </DialogDescription>
+          </div>
+          <div className="px-6 pb-5 flex justify-end">
+            <DialogClose asChild>
+              <Button size="sm" variant="secondary" className="cursor-pointer">
+                Got it
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {isCorrect && (
+        <Confetti
+          width={width}
+          height={height}
+          confettiSource={{ x: width / 2, y: height / 2, w: 0, h: 0 }}
+          initialVelocityY={{ min: -15, max: -5 }}
+        />
+      )}
     </div>
   )
 }
