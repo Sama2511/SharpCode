@@ -6,7 +6,7 @@ const wandboxCompilers: Record<keyof typeof languagesVersions, string> = {
   typescript: 'typescript-5.6.2',
   python: 'cpython-3.10.15',
   java: 'openjdk-jdk-22+36',
-  csharp: 'dotnetcore-8.0.402',
+  cpp: 'gcc-13.2.0',
 }
 
 const API = axios.create({

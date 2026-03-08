@@ -1,24 +1,21 @@
 export default function Output({
   output,
   isError,
+  validationErrors,
 }: {
   output: string
   isError: boolean
+  validationErrors: string[]
 }) {
   return (
-    <div className="h-full flex flex-col bg-background font-mono text-sm border-t-2">
-      {/* Terminal title bar */}
-      {/* <div className="flex items-center gap-1.5 px-4 py-1.5 bg-popover border-b border-border shrink-0">
-        <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="size-2.5 rounded-full bg-[#febc2e]" />
-        <span className="size-2.5 rounded-full bg-[#28c840]" />
-      </div> */}
-
+    <div className="h-full flex flex-col bg-background font-mono text-sm ">
       {/* Terminal body */}
-      <div className="flex-1 overflow-auto p-4 bg-[#1e1e1e]">
-        <div className="underline underline-offset-4 mb-4">Output</div>
+      <div className="flex-1 overflow-auto p-4 bg-popover">
+        <div className="underline underline-offset-4 mb-4 text-foreground">
+          Output
+        </div>
         {output ? (
-          <div className="flex gap-2">
+          <div className="flex gap-2 text-lg">
             <span className={isError ? 'text-red-400' : 'text-emerald-400'}>
               {isError ? '✗' : '❯'}
             </span>
@@ -32,10 +29,23 @@ export default function Output({
           </div>
         ) : (
           <div className="flex gap-2 items-center">
-            <span className="text-white">❯</span>
-            <span className="text-white italic">
+            <span className="text-foreground">❯</span>
+            <span className="text-foreground italic">
               Run your code to see output...
             </span>
+          </div>
+        )}
+        {validationErrors.length > 0 && (
+          <div className="mt-4 border-t border-border pt-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+              Errors
+            </div>
+            {validationErrors.map((err, i) => (
+              <div key={i} className="flex gap-2 text-red-400 text-sm">
+                <span>✗</span>
+                <span>{err}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>

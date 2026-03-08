@@ -20,6 +20,8 @@ import { getQuestion } from '@/actions/question'
 import { checkAnswer } from '@/actions/checkAnswer'
 import { getHint } from '@/actions/hint'
 import { useRunCode } from '@/hooks/useRunCode'
+import { ModeToggle } from './ui/mode-toggle'
+import { useTheme } from './ui/theme-provider'
 
 export default function CodeEditor() {
   const editRef = useRef(null)
@@ -39,7 +41,9 @@ export default function CodeEditor() {
   const [isCorrect, setIsCorrect] = useState(false)
   const [hint, setHint] = useState('')
   const [hintLoading, setHintLoading] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
   const { width, height } = useWindowSize()
+  const { theme } = useTheme()
 
   const onMount = (editor: any) => {
     editRef.current = editor
@@ -109,7 +113,7 @@ export default function CodeEditor() {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
       {/* Toolbar */}
-      <div className="flex items-center h-14 gap-2 px-4 border-b border-border bg-card shrink-0">
+      <div className="flex items-center h-14 gap-2 px-4 border-2 bg-popover rounded-2xl mx-2 mt-2">
         <LanguageSelector lang={language} onSelect={onSelectLanguage} />
         <TopicSelector
           language={language}
@@ -118,11 +122,14 @@ export default function CodeEditor() {
           invalid={invalid}
         />
         <Difficulty difficulty={difficulty} onSelect={onSelectDifficulty} />
-        <div className="ml-auto">
+
+        {/* Center buttons */}
+        <div className="flex items-center gap-2 mx-auto">
           <Button
             onClick={requestQuestion}
             disabled={isLoading || verifying}
             size="sm"
+            variant="secondary"
             className="cursor-pointer"
           >
             {isLoading ? (
@@ -133,96 +140,104 @@ export default function CodeEditor() {
               'Get Question'
             )}
           </Button>
+          <Button
+            onClick={runCode}
+            disabled={isPending || code === ''}
+            size="sm"
+            className="cursor-pointer"
+          >
+            {isPending ? (
+              <>
+                <Spinner /> Executing
+              </>
+            ) : (
+              'Run Code'
+            )}
+          </Button>
+          <Button
+            onClick={requestHint}
+            disabled={question === 'Press "Get Question" Button' || hintLoading}
+            variant="secondary"
+            size="sm"
+            className="cursor-pointer"
+          >
+            {hintLoading ? (
+              <>
+                <Spinner /> Getting hint
+              </>
+            ) : (
+              'Get Hint'
+            )}
+          </Button>
+          {verifying ? (
+            <Button variant="default" size="sm" disabled>
+              <Spinner /> Checking
+            </Button>
+          ) : (
+            <Button
+              onClick={verifyAnswer}
+              disabled={
+                question === 'Press "Get Question" Button' || code === ''
+              }
+              size="sm"
+              className="cursor-pointer"
+            >
+              Check Answer
+            </Button>
+          )}
         </div>
+
+        <ModeToggle />
       </div>
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Editor + Output */}
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <Editor
-            height="60%"
-            theme="vs-dark"
-            language={language}
-            onMount={onMount}
-            value={code}
-            onChange={(value: any) => setCode(value)}
-            options={{
-              fontSize: 16,
-              fontFamily: "'Fira Code', 'Consolas', monospace",
-              minimap: { enabled: false },
-              lineNumbers: 'on',
-              padding: { top: 10 },
-              cursorBlinking: 'smooth',
-              cursorSmoothCaretAnimation: 'on',
-              smoothScrolling: true,
-              tabSize: 2,
-            }}
-          />
-          <div className="flex-1 overflow-y-auto border-t border-border">
-            <Output output={output} isError={isError} />
+        <div className="flex flex-col flex-1 overflow-hidden p-2 gap-2">
+          <div className="h-[60%] rounded-2xl overflow-hidden border-2 border-border">
+            <Editor
+              height="100%"
+              theme={theme === 'dark' ? 'vs-dark' : 'vs'}
+              language={language}
+              onMount={onMount}
+              value={code}
+              onChange={(value: any) => setCode(value)}
+              onValidate={(markers) =>
+                setValidationErrors(markers.map((m) => m.message))
+              }
+              options={{
+                fontSize: 18,
+                fontFamily: "'Fira Code', 'Consolas', monospace",
+                minimap: { enabled: false },
+                lineNumbers: 'on',
+                padding: { top: 10 },
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                smoothScrolling: true,
+                tabSize: 2,
+                formatOnPaste: true,
+                formatOnType: true,
+              }}
+            />
+          </div>
+          <div className="flex-1 overflow-y-auto border-2 rounded-2xl border-border">
+            <Output
+              output={output}
+              isError={isError}
+              validationErrors={validationErrors}
+            />
           </div>
         </div>
 
         {/* Right: Question panel */}
-        <div className="w-80 shrink-0 flex flex-col border-l border-border bg-popover">
-          <div className="p-4 flex-1 overflow-y-auto">
-            <p className="text-xs font-semibold uppercase tracking-wider text- mb-3">
+        <div className="w-100 shrink-0 flex flex-col m-2 ml-0">
+          <div className="p-4 flex-1 overflow-y-auto border-2 rounded-2xl border-border bg-popover h-full m-0">
+            <p className="underline underline-offset-2 font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Challenge
             </p>
-            <pre className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-foreground">
+            <pre className="whitespace-pre-wrap wrap-break-word  leading-relaxed text-foreground">
               {question}
             </pre>
-          </div>
-          {/* Action buttons */}
-          <div className="p-4 border-t border-border flex flex-col gap-2">
-            <Button
-              onClick={runCode}
-              disabled={isPending || code === ''}
-              size="sm"
-              className="cursor-pointer w-full"
-            >
-              {isPending ? (
-                <>
-                  <Spinner /> Executing
-                </>
-              ) : (
-                'Run Code'
-              )}
-            </Button>
-            <Button
-              onClick={requestHint}
-              disabled={
-                question === 'Press "Get Question" Button' || hintLoading
-              }
-              variant="outline"
-              size="sm"
-              className="cursor-pointer w-full"
-            >
-              {hintLoading ? (
-                <>
-                  <Spinner /> Getting hint
-                </>
-              ) : (
-                'Get Hint'
-              )}
-            </Button>
-            {verifying ? (
-              <Button variant="default" size="sm" disabled className="w-full">
-                <Spinner /> Checking
-              </Button>
-            ) : (
-              <Button
-                onClick={verifyAnswer}
-                disabled={
-                  question === 'Press "Get Question" Button' || code === ''
-                }
-                size="sm"
-                className="cursor-pointer w-full"
-              >
-                Check Answer
-              </Button>
-            )}
           </div>
         </div>
       </div>
@@ -236,42 +251,21 @@ export default function CodeEditor() {
       >
         <DialogContent
           showCloseButton={false}
-          className="p-0 overflow-hidden gap-0"
+          className={`bg-popover border-2 ${isCorrect ? 'border-emerald-500' : 'border-red-500'}`}
         >
-          <div
-            className={`px-6 py-5 ${
-              isCorrect
-                ? 'bg-emerald-950/40 border-b border-emerald-800/50'
-                : 'bg-red-950/40 border-b border-red-800/50'
-            }`}
-          >
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
-                <span
-                  className={`inline-flex items-center justify-center size-8 rounded-full text-sm ${
-                    isCorrect
-                      ? 'bg-emerald-900/20 text-emerald-300'
-                      : 'bg-red-500/20 text-red-400'
-                  }`}
-                >
-                  {isCorrect ? '✓' : '✗'}
-                </span>
-                {isCorrect ? 'Nailed it!' : 'Not quite right'}
-              </DialogTitle>
-            </DialogHeader>
-          </div>
-          <div className="px-6 py-5">
-            <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
-              {evaluation}
-            </DialogDescription>
-          </div>
-          <div className="px-6 pb-5 flex justify-end">
-            <DialogClose asChild>
-              <Button size="sm" variant="secondary" className="cursor-pointer">
-                {isCorrect ? 'Next challenge' : 'Try again'}
-              </Button>
-            </DialogClose>
-          </div>
+          <DialogHeader>
+            <DialogTitle className="text-xl underline underline-offset-4">
+              {isCorrect ? 'Nailed it!' : 'Not quite right'}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="text-[17px]">
+            {evaluation}
+          </DialogDescription>
+          <DialogClose asChild>
+            <Button variant="secondary" className="cursor-pointer w-fit m-auto">
+              {isCorrect ? 'Next challenge' : 'Try again'}
+            </Button>
+          </DialogClose>
         </DialogContent>
       </Dialog>
 
@@ -282,32 +276,21 @@ export default function CodeEditor() {
           if (!open) setHint('')
         }}
       >
-        <DialogContent
-          showCloseButton={false}
-          className="p-0 overflow-hidden gap-0"
-        >
-          <div className="px-6 py-5 bg-blue-950/40 border-b border-blue-800/50">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-lg font-semibold">
-                <span className="inline-flex items-center justify-center size-8 rounded-full text-sm bg-blue-500/20 text-blue-400">
-                  ?
-                </span>
-                Hint
-              </DialogTitle>
-            </DialogHeader>
-          </div>
-          <div className="px-6 py-5">
-            <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
-              {hint}
-            </DialogDescription>
-          </div>
-          <div className="px-6 pb-5 flex justify-end">
-            <DialogClose asChild>
-              <Button size="sm" variant="secondary" className="cursor-pointer">
-                Got it
-              </Button>
-            </DialogClose>
-          </div>
+        <DialogContent showCloseButton={false} className="bg-popover">
+          <DialogHeader>
+            <DialogTitle className="text-xl underline underline-offset-4 ">
+              Hint
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="text-[17px]">{hint}</DialogDescription>
+          <DialogClose asChild>
+            <Button
+              variant="secondary"
+              className="cursor-pointer w-fit m-auto "
+            >
+              Got it
+            </Button>
+          </DialogClose>
         </DialogContent>
       </Dialog>
 

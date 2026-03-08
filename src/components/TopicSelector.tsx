@@ -46,14 +46,14 @@ export const concepts = {
     'Generics',
     'Exception Handling',
   ],
-  csharp: [
+  cpp: [
     'Variables & Data Types',
+    'Functions & References',
+    'Pointers & Memory',
     'Classes & Objects',
     'Inheritance & Polymorphism',
-    'Interfaces',
-    'LINQ',
-    'Async & Await',
-    'Delegates & Events',
+    'Templates',
+    'STL & Containers',
   ],
 }
 export default function TopicSelector({
@@ -69,7 +69,7 @@ export default function TopicSelector({
 }) {
   return (
     <Select value={topic} onValueChange={onSelect}>
-      <SelectTrigger className="w-56 h-full" aria-invalid={invalid}>
+      <SelectTrigger className="w-56" aria-invalid={invalid}>
         <SelectValue placeholder="Select a concept" />
       </SelectTrigger>
       <SelectContent position="popper">

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import appCss from '../styles.css?url'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from '@/components/ui/theme-provider'
 
 const queryClient = new QueryClient()
 
@@ -40,22 +41,24 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
-          {children}
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
-        </QueryClientProvider>
-        <Scripts />
-        <Toaster />
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            {children}
+            <TanStackDevtools
+              config={{
+                position: 'bottom-right',
+              }}
+              plugins={[
+                {
+                  name: 'Tanstack Router',
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+          </QueryClientProvider>
+          <Scripts />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   )

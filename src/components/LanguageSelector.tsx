@@ -13,9 +13,16 @@ export const languagesVersions = {
   typescript: '5.0.3',
   python: '3.10.0',
   java: '15.0.2',
-  csharp: '6.12.0',
+  cpp: '13.2.0',
 }
 const languages = Object.entries(languagesVersions)
+const languageLabels: Record<keyof typeof languagesVersions, string> = {
+  javascript: 'javascript',
+  typescript: 'typescript',
+  python: 'python',
+  java: 'java',
+  cpp: 'C++',
+}
 export default function LanguageSelector({
   lang,
   onSelect,
@@ -37,7 +44,7 @@ export default function LanguageSelector({
               key={language}
               value={language}
             >
-              {language}
+              {languageLabels[language as keyof typeof languagesVersions]}
               &nbsp;
             </SelectItem>
           ))}
