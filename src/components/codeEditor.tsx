@@ -22,6 +22,7 @@ import { getHint } from '@/actions/hint'
 import { useRunCode } from '@/hooks/useRunCode'
 import { ModeToggle } from './ui/mode-toggle'
 import { useTheme } from './ui/theme-provider'
+import ReactMarkdown from 'react-markdown'
 
 export default function CodeEditor() {
   const editRef = useRef(null)
@@ -230,14 +231,14 @@ export default function CodeEditor() {
         </div>
 
         {/* Right: Question panel */}
-        <div className="w-100 shrink-0 flex flex-col m-2 ml-0">
+        <div className="w-150 shrink-0 flex flex-col m-2 ml-0">
           <div className="p-4 flex-1 overflow-y-auto border-2 rounded-2xl border-border bg-popover h-full m-0">
             <p className="underline underline-offset-2 font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Challenge
             </p>
-            <pre className="whitespace-pre-wrap wrap-break-word  leading-relaxed text-foreground">
-              {question}
-            </pre>
+            <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-foreground">
+              <ReactMarkdown>{question}</ReactMarkdown>
+            </div>
           </div>
         </div>
       </div>
